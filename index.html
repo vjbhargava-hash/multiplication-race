@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#5b3df5">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Multiplication Race 🚀</title>
+<meta name="description" content="10 problems. 3-digit × 2-digit. How fast can you go?">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+<style>
+:root{--bg1:#5b3df5;--bg2:#ff6fb5;--card:#fff;--ink:#23214a;--muted:#6b6a8f;--good:#16a34a;--bad:#e11d48;--yel:#ffd23f;--blue:#3b82f6}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;font-family:ui-rounded,"SF Pro Rounded","Nunito","Trebuchet MS",system-ui,-apple-system,sans-serif;color:var(--ink)}
+body{background:linear-gradient(160deg,var(--bg1),var(--bg2));min-height:100vh;min-height:100dvh;padding:env(safe-area-inset-top) 12px env(safe-area-inset-bottom)}
+.wrap{max-width:520px;margin:0 auto;padding:14px 0 28px}
+h1{color:#fff;text-align:center;font-size:clamp(28px,8vw,42px);margin:8px 0 2px;text-shadow:0 3px 0 rgba(0,0,0,.18)}
+.sub{color:#fff;text-align:center;opacity:.95;margin:0 0 14px;font-size:17px}
+.card{background:var(--card);border-radius:24px;padding:20px;box-shadow:0 10px 30px rgba(30,10,80,.25);margin-bottom:14px}
+.hidden{display:none!important}
+label{font-weight:800;font-size:18px;display:block;margin-bottom:8px}
+input.name{width:100%;font-size:24px;padding:14px 16px;border-radius:16px;border:3px solid #d9d4ff;outline:none;font-family:inherit;font-weight:700}
+input.name:focus{border-color:var(--bg1)}
+.hint{color:var(--muted);font-size:15px;margin:8px 2px 0}
+.err{color:var(--bad);font-weight:800;min-height:1.3em;margin-top:6px}
+.btn{display:block;width:100%;border:0;border-radius:18px;padding:16px;font-size:22px;font-weight:900;font-family:inherit;cursor:pointer;color:#fff;background:var(--bg1);box-shadow:0 5px 0 #3a22b8;margin-top:12px;touch-action:manipulation}
+.btn:active{transform:translateY(3px);box-shadow:0 2px 0 #3a22b8}
+.btn.go{background:#22c55e;box-shadow:0 5px 0 #15803d}
+.btn.alt{background:#fff;color:var(--bg1);border:3px solid var(--bg1);box-shadow:0 5px 0 #d9d4ff}
+.btn.small{font-size:17px;padding:12px}
+.row{display:flex;gap:10px}.row>*{flex:1}
+.pill{display:inline-block;background:#efeaff;color:var(--bg1);font-weight:800;border-radius:999px;padding:4px 12px;font-size:14px}
+.rules{margin:10px 0 0;padding-left:20px;line-height:1.5;font-size:16px}
+/* game */
+.hud{display:flex;justify-content:space-between;align-items:center;color:#fff;font-weight:900;font-size:20px;margin-bottom:10px}
+.timer{background:rgba(0,0,0,.2);border-radius:14px;padding:6px 12px;font-variant-numeric:tabular-nums}
+.dots{display:flex;gap:6px;justify-content:center;margin:0 0 12px}
+.dot{width:18px;height:18px;border-radius:50%;background:rgba(255,255,255,.35)}
+.dot.cur{background:#fff;transform:scale(1.25)}.dot.ok{background:#4ade80}.dot.no{background:#fb7185}
+.problem{text-align:center;font-size:clamp(44px,14vw,68px);font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:1px;margin:6px 0}
+.problem .x{color:var(--bg2)}
+.answer{width:100%;text-align:center;font-size:40px;font-weight:900;font-family:inherit;padding:10px;border-radius:18px;border:4px solid #d9d4ff;outline:none;font-variant-numeric:tabular-nums;color:var(--ink);background:#faf9ff}
+.answer:focus{border-color:var(--bg1)}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.pad button{font-size:30px;font-weight:900;font-family:inherit;border:0;border-radius:16px;padding:14px 0;background:#efeaff;color:var(--ink);box-shadow:0 4px 0 #cfc6ff;touch-action:manipulation;cursor:pointer}
+.pad button:active{transform:translateY(3px);box-shadow:0 1px 0 #cfc6ff}
+.pad .ok{background:#22c55e;color:#fff;box-shadow:0 4px 0 #15803d}
+.pad .del{background:#ffe1ea;box-shadow:0 4px 0 #ffb3c8}
+.paper{text-align:center;color:var(--muted);font-size:14px;margin-top:10px}
+.fb{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(20,10,60,.35);z-index:10}
+.fb .box{background:#fff;border-radius:26px;padding:24px 28px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.3);animation:pop .25s ease-out;max-width:90vw}
+.fb .big{font-size:56px}.fb .msg{font-size:26px;font-weight:900}.fb .det{font-size:22px;margin-top:6px;font-variant-numeric:tabular-nums}
+@keyframes pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+.shake{animation:shake .3s}@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+/* results */
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+.stat{background:#f5f3ff;border-radius:16px;padding:12px;text-align:center}
+.stat .v{font-size:30px;font-weight:900;font-variant-numeric:tabular-nums}.stat .k{color:var(--muted);font-weight:700;font-size:14px}
+.rankbig{text-align:center;font-size:26px;font-weight:900;margin:8px 0}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+td,th{padding:9px 6px;text-align:left;border-bottom:1px solid #eee;font-size:17px}
+th{color:var(--muted);font-size:13px;text-transform:uppercase}
+tr.me td{background:#fff7cc;font-weight:900}
+td.r{width:44px;font-weight:900;text-align:center}
+.tabs{display:flex;gap:8px;margin-bottom:10px}.tabs button{flex:1;font-family:inherit;font-weight:900;font-size:16px;border-radius:14px;padding:10px;border:3px solid var(--bg1);background:#fff;color:var(--bg1)}
+.tabs button.on{background:var(--bg1);color:#fff}
+.ans li{margin:6px 0;font-size:18px;font-variant-numeric:tabular-nums}.ans .good{color:var(--good);font-weight:900}.ans .badc{color:var(--bad);font-weight:900}
+.center{text-align:center}.muted{color:var(--muted)}
+.confetti{position:fixed;top:-40px;font-size:30px;z-index:20;pointer-events:none;animation:fall 2.6s linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
+.count{color:#fff;font-size:120px;font-weight:900;text-align:center;margin-top:30vh;text-shadow:0 6px 0 rgba(0,0,0,.2)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <!-- HOME -->
+  <section id="home">
+    <h1>🚀 Multiplication Race</h1>
+    <p class="sub">10 problems · 3-digit × 2-digit · beat the clock!</p>
+    <div class="card">
+      <div class="center" style="margin-bottom:12px"><span class="pill" id="roundPill">Today's round</span></div>
+      <label for="name">Your first name or nickname</label>
+      <input id="name" class="name" maxlength="15" autocomplete="off" autocapitalize="words" spellcheck="false" placeholder="e.g. Ziva">
+      <p class="hint">🙅 No last names, please! (Max 15 letters)</p>
+      <div class="err" id="nameErr"></div>
+      <button class="btn go" id="startBtn">▶ Start</button>
+      <button class="btn alt small" id="lbBtn">🏆 Leaderboard</button>
+    </div>
+    <div class="card">
+      <b>How it works</b>
+      <ul class="rules">
+        <li>Everyone gets the <b>same 10 problems</b> today — fair race!</li>
+        <li>✏️ Grab <b>paper and pencil</b> for scratch work.</li>
+        <li>Type your answer and tap <b>✓</b>. Each wrong answer adds <b>+10 seconds</b>.</li>
+        <li>Most correct wins; ties go to the fastest time.</li>
+        <li>Only your <b>first try</b> each day goes on the leaderboard. After that it's practice.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- COUNTDOWN -->
+  <section id="countdown" class="hidden"><div class="count" id="countNum">3</div></section>
+
+  <!-- PLAY -->
+  <section id="play" class="hidden">
+    <div class="hud"><span id="qnum">1 / 10</span><span class="timer" id="timer">⏱ 0.0s</span></div>
+    <div class="dots" id="dots"></div>
+    <div class="card">
+      <div class="problem" id="problem"></div>
+      <input id="answer" class="answer" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="7" aria-label="Your answer">
+      <div class="pad" id="pad">
+        <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
+        <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
+        <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button>
+        <button data-k="del" class="del" aria-label="Delete">⌫</button><button data-k="0">0</button><button data-k="ok" class="ok" aria-label="Submit">✓</button>
+      </div>
+      <p class="paper">✏️ Use paper for scratch work · <span id="practiceTag"></span></p>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <section id="results" class="hidden">
+    <h1 id="resTitle">🎉 Finished!</h1>
+    <div class="card">
+      <div class="rankbig" id="rankLine">Saving your score…</div>
+      <div class="stats">
+        <div class="stat"><div class="v" id="sCorrect">-</div><div class="k">correct</div></div>
+        <div class="stat"><div class="v" id="sTotal">-</div><div class="k">total time</div></div>
+        <div class="stat"><div class="v" id="sRaw">-</div><div class="k">solving time</div></div>
+        <div class="stat"><div class="v" id="sPen">-</div><div class="k">penalties</div></div>
+      </div>
+      <div class="err center" id="saveErr"></div>
+      <button class="btn" id="resLbBtn">🏆 See leaderboard</button>
+      <button class="btn alt small" id="revealBtn">👀 Show answers</button>
+      <div id="reveal" class="hidden">
+        <p class="muted" style="font-size:14px">🤫 Please don't tell friends the answers before they play!</p>
+        <ol class="ans" id="ansList"></ol>
+      </div>
+      <div class="row"><button class="btn alt small" id="againBtn">🔁 Practice again</button><button class="btn alt small" id="homeBtn">🏠 Home</button></div>
+    </div>
+  </section>
+
+  <!-- LEADERBOARD -->
+  <section id="board" class="hidden">
+    <h1>🏆 Leaderboard</h1>
+    <p class="sub" id="boardSub"></p>
+    <div class="card">
+      <div class="tabs"><button id="tabToday" class="on">Today</button><button id="tabAll">All-time best</button></div>
+      <div id="boardBody" class="muted center">Loading…</div>
+      <div class="row"><button class="btn small" id="refreshBtn">🔄 Refresh</button><button class="btn alt small" id="boardHome">🏠 Home</button></div>
+    </div>
+  </section>
+</div>
+<div id="fb" class="fb hidden"><div class="box"><div class="big" id="fbBig"></div><div class="msg" id="fbMsg"></div><div class="det" id="fbDet"></div></div></div>
+<noscript><p style="color:#fff;text-align:center">Please turn on JavaScript to play.</p></noscript>
+<script type="module" src="./app.js"></script>
+</body>
+</html>

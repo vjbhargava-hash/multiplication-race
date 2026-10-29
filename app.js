@@ -175,24 +175,49 @@ $('againBtn').onclick = () => startGame(G ? G.name : cleanName($('name').value))
 $('homeBtn').onclick = () => show('home');
 
 // ---------- leaderboard ----------
-let tab = 'today', boardTimer = null;
+let tab = 'today', boardTimer = null, viewDay = ROUND, days = [ROUND];
+const reqDay = params.get('day');
+if (!custom && reqDay && isDailyRound(reqDay) && reqDay <= ROUND) viewDay = reqDay;
+async function loadDays() {
+  if (custom) return;
+  try {
+    const st = await getStore();
+    const list = st.listDays ? await st.listDays() : [];
+    days = [...new Set([...list.filter((d) => d <= ROUND), ROUND, viewDay])].sort();
+  } catch {}
+  const sel = $('daySel');
+  sel.innerHTML = days.slice().reverse().map((d) => `<option value="${d}">${d === ROUND ? 'Today – ' : ''}${esc(prettyRound(d))}${d.slice(0, 4) !== ROUND.slice(0, 4) ? ' ' + d.slice(0, 4) : ''}</option>`).join('');
+  syncNav();
+}
+function syncNav() {
+  const i = days.indexOf(viewDay);
+  $('daySel').value = viewDay;
+  $('dayPrev').disabled = i <= 0; $('dayNext').disabled = i < 0 || i >= days.length - 1;
+}
+function goDay(d) { viewDay = d; syncNav(); $('boardBody').innerHTML = 'Loading…'; renderBoard(); }
+$('dayPrev').onclick = () => { const i = days.indexOf(viewDay); if (i > 0) goDay(days[i - 1]); };
+$('dayNext').onclick = () => { const i = days.indexOf(viewDay); if (i < days.length - 1) goDay(days[i + 1]); };
+$('daySel').onchange = () => goDay($('daySel').value);
 async function renderBoard() {
-  $('boardSub').textContent = tab === 'today' ? prettyRound(ROUND) : 'Best daily score per player';
-  $('tabToday').classList.toggle('on', tab === 'today'); $('tabAll').classList.toggle('on', tab === 'all');
+  const dayView = tab === 'today';
+  const showDay = custom ? ROUND : viewDay;
+  $('dayNav').classList.toggle('hidden', !dayView || !!custom);
+  $('boardSub').textContent = dayView ? (showDay === ROUND && !custom ? 'Today: ' : '') + prettyRound(showDay) : 'Best daily score per player';
+  $('tabToday').classList.toggle('on', dayView); $('tabAll').classList.toggle('on', !dayView);
   try {
     const store = await getStore();
-    const rows = tab === 'today' ? await store.leaderboard(ROUND) : await store.allTime();
-    if (!rows.length) { $('boardBody').innerHTML = '<p>No scores yet — be the first! 🚀</p>'; return; }
+    const rows = dayView ? await store.leaderboard(showDay) : await store.allTime();
+    if (!rows.length) { $('boardBody').innerHTML = showDay === ROUND || !dayView ? '<p>No scores yet — be the first! 🚀</p>' : '<p>No scores on this day.</p>'; return; }
     const medal = (k) => ['🥇', '🥈', '🥉'][k] || k + 1;
     $('boardBody').innerHTML = `<table><tr><th>#</th><th>Name</th><th>✓</th><th>Time</th>${tab === 'all' ? '<th>Day</th>' : ''}</tr>` +
       rows.slice(0, 100).map((x, k) => `<tr class="${x.id.startsWith(deviceId + '-') ? 'me' : ''}"><td class="r">${medal(k)}</td><td>${esc(x.name)}</td><td>${x.correct}/10</td><td>${fmtTime(x.totalMs)}</td>${tab === 'all' ? `<td style="font-size:13px">${esc(x.roundId.slice(5))}</td>` : ''}</tr>`).join('') + '</table>' +
       '<p class="muted" style="font-size:13px">Time includes +10 s for each wrong answer.</p>';
   } catch (e) { $('boardBody').innerHTML = '<p class="err">Could not load the leaderboard. Check your internet and tap Refresh.</p>'; }
 }
-function openBoard() { show('board'); $('boardBody').innerHTML = 'Loading…'; renderBoard(); clearInterval(boardTimer); boardTimer = setInterval(() => { if (!$('board').classList.contains('hidden')) renderBoard(); else clearInterval(boardTimer); }, 20000); }
-$('lbBtn').onclick = openBoard; $('resLbBtn').onclick = () => { tab = 'today'; openBoard(); };
+function openBoard() { show('board'); loadDays(); $('boardBody').innerHTML = 'Loading…'; renderBoard(); clearInterval(boardTimer); boardTimer = setInterval(() => { if (!$('board').classList.contains('hidden')) renderBoard(); else clearInterval(boardTimer); }, 20000); }
+$('lbBtn').onclick = openBoard; $('resLbBtn').onclick = () => { tab = 'today'; viewDay = ROUND; openBoard(); };
 $('tabToday').onclick = () => { tab = 'today'; renderBoard(); };
 $('tabAll').onclick = () => { tab = 'all'; renderBoard(); };
 if (custom) $('tabAll').classList.add('hidden');
-$('refreshBtn').onclick = renderBoard; $('boardHome').onclick = () => show('home');
-if (params.get('view') === 'board') openBoard();
+$('refreshBtn').onclick = () => { loadDays(); renderBoard(); }; $('boardHome').onclick = () => show('home');
+if (params.get('view') === 'board' || reqDay) openBoard();

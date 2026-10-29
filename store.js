@@ -23,6 +23,12 @@ const mantle = {
     if (!r.ok) throw new Error('Leaderboard unavailable (' + r.status + ')');
     return r.data || {};
   },
+  // All daily rounds that have a stored board (oldest first).
+  async listDays() {
+    const r = await j(`${M}/list/${MANTLE_NS}`);
+    if (!r.ok) throw new Error('Leaderboard unavailable (' + r.status + ')');
+    return ((r.data && r.data.entries) || []).map((e) => e.path).filter((p) => /^r\/\d{4}-\d\d-\d\d$/.test(p)).map((p) => p.slice(2)).sort();
+  },
   async leaderboard(roundId) { return rankRound(await this.getRoundMap(roundId), roundId); },
   async allTime() {
     const r = await j(`${M}/${MANTLE_NS}/best`);
@@ -75,16 +81,16 @@ const mantle = {
     }
     return { duplicate: false, rows };
   },
-  // Free tier allows 100 entries per namespace: keep only the newest 60 rounds.
+  // Free tier allows 100 entries per namespace: keep the newest 95 rounds (custom rooms are removed first).
   async housekeep() {
     if (Math.random() > 0.2) return;
     const r = await j(`${M}/list/${MANTLE_NS}`);
     const paths = ((r.data && r.data.entries) || []).map((e) => e.path).filter((p) => p.startsWith('r/'));
-    if (paths.length <= 60) return;
+    if (paths.length <= 95) return;
     paths.sort((a, b) => a.localeCompare(b));
     const daily = paths.filter((p) => /^r\/\d{4}/.test(p));
     const custom = paths.filter((p) => !/^r\/\d{4}/.test(p));
-    const victims = [...custom, ...daily].slice(0, paths.length - 60);
+    const victims = [...custom, ...daily].slice(0, paths.length - 95);
     for (const p of victims) await j(`${M}/${MANTLE_NS}/${p}`, { method: 'DELETE' });
   },
 };

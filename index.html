@@ -69,6 +69,7 @@ td.r{width:44px;font-weight:900;text-align:center}
 .confetti{position:fixed;top:-40px;font-size:30px;z-index:20;pointer-events:none;animation:fall 2.6s linear forwards}
 @keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
 .count{color:#fff;font-size:120px;font-weight:900;text-align:center;margin-top:30vh;text-shadow:0 6px 0 rgba(0,0,0,.2)}
+.daynav{display:flex;gap:8px;margin-bottom:10px}.daynav button{font-family:inherit;font-weight:900;font-size:20px;border-radius:14px;padding:8px 14px;border:3px solid var(--bg1);background:#fff;color:var(--bg1);cursor:pointer}.daynav button:disabled{opacity:.3}.daynav select{flex:1;font-family:inherit;font-weight:800;font-size:16px;border-radius:14px;border:3px solid #d9d4ff;padding:8px;background:#fff;color:var(--ink)}
 </style>
 </head>
 <body>
@@ -145,7 +146,8 @@ td.r{width:44px;font-weight:900;text-align:center}
     <h1>🏆 Leaderboard</h1>
     <p class="sub" id="boardSub"></p>
     <div class="card">
-      <div class="tabs"><button id="tabToday" class="on">Today</button><button id="tabAll">All-time best</button></div>
+      <div class="tabs"><button id="tabToday" class="on">By day</button><button id="tabAll">All-time best</button></div>
+      <div id="dayNav" class="daynav"><button id="dayPrev" aria-label="Previous day">◀</button><select id="daySel" aria-label="Pick a day"></select><button id="dayNext" aria-label="Next day">▶</button></div>
       <div id="boardBody" class="muted center">Loading…</div>
       <div class="row"><button class="btn small" id="refreshBtn">🔄 Refresh</button><button class="btn alt small" id="boardHome">🏠 Home</button></div>
     </div>
